@@ -151,16 +151,16 @@ pub fn run() {
 
 #[cfg(test)]
 mod tests {
-    use crate::dec_one;
+    use super::*;
 
     #[test]
     fn test_one() {
         let input = vec![199, 200, 208, 210, 200, 207, 240, 269, 260, 263];
 
-        let output = dec_one::part_one(&input);
+        let output = part_one(&input);
         assert_eq!(output, 7);
 
-        let output = dec_one::part_two(&input);
+        let output = part_two(&input);
         assert_eq!(output, 5);
     }
 }
