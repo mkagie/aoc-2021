@@ -1,10 +1,7 @@
-use std::fs::File;
-use std::io::{BufRead, BufReader};
+use mkagie_utils::file_to_string_vec;
 pub fn run() {
-    let filename = "/home/mkagie/code/personal/adventOfCoding/advent-2021/src/day_two.txt";
-    let file = File::open(filename).unwrap();
-    let reader = BufReader::new(file);
-    let lines: Vec<String> = reader.lines().map(|x| x.unwrap()).collect();
+    let filename = "/home/mkagie/code/personal/adventOfCoding/advent-2021/day_two/day_two.txt";
+    let lines = file_to_string_vec(filename);
     let mut pos = Position::new();
     lines.iter().for_each(|x| pos.parse_two(x));
     println!("{}", pos.function())

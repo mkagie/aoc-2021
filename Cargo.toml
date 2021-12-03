@@ -1,6 +1,7 @@
 [workspace]
 
 members = [
+    "mkagie_utils",
     "day_one",
     "day_two",
 ]
