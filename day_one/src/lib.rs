@@ -1,13 +1,13 @@
 use mkagie_utils::file_to_int_vec;
 
-pub fn part_one(input: &Vec<u16>) -> u16 {
+pub fn part_one(input: &[u16]) -> u16 {
     input
         .windows(2)
         .map(|w| (w[1] as i32 - w[0] as i32 > 0))
         .fold(0, |a, b| a as u16 + b as u16)
 }
 
-pub fn part_two(input: &Vec<u16>) -> u16 {
+pub fn part_two(input: &[u16]) -> u16 {
     let window: Vec<u16> = input
         .windows(3)
         .map(|w| w.iter().fold(0, |a, b| a + b))

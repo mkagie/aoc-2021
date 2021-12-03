@@ -22,3 +22,11 @@ where
         .map(|x| x.parse::<T>().unwrap())
         .collect()
 }
+
+pub fn split_by_whitespace(input: &str) -> Vec<&str> {
+    input.split(' ').collect()
+}
+
+pub fn str_array_to_vec(input: &[&str]) -> Vec<String> {
+    input.iter().map(|x| x.to_string()).collect()
+}

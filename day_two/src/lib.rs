@@ -1,10 +1,9 @@
-use mkagie_utils::file_to_string_vec;
+use mkagie_utils::*;
 pub fn run() {
     let filename = "/home/mkagie/code/personal/adventOfCoding/advent-2021/day_two/day_two.txt";
     let lines = file_to_string_vec(filename);
-    let mut pos = Position::new();
-    lines.iter().for_each(|x| pos.parse_two(x));
-    println!("{}", pos.function())
+    println!("{:?}", part_one(&lines));
+    println!("{:?}", part_two(&lines));
 }
 
 #[derive(Debug)]
@@ -15,19 +14,19 @@ struct Position {
 }
 impl Position {
     fn parse(&mut self, value: &str) {
-        let splits = value.split(" ").collect::<Vec<&str>>();
+        let splits = split_by_whitespace(value);
         let direction = splits[0];
         let amount: i32 = splits[1].parse().unwrap();
         match direction {
             "forward" => self.horizontal += amount,
             "down" => self.depth += amount,
             "up" => self.depth -= amount,
-            other => (),
+            _ => (),
         }
     }
 
     fn parse_two(&mut self, value: &str) {
-        let splits = value.split(" ").collect::<Vec<&str>>();
+        let splits = split_by_whitespace(value);
         let direction = splits[0];
         let amount: i32 = splits[1].parse().unwrap();
         match direction {
@@ -37,7 +36,7 @@ impl Position {
             }
             "down" => self.aim += amount,
             "up" => self.aim -= amount,
-            other => (),
+            _ => (),
         }
     }
 
@@ -54,13 +53,13 @@ impl Position {
     }
 }
 
-pub fn part_one(input: &[&str]) -> i32 {
+fn part_one(input: &[String]) -> i32 {
     let mut pos = Position::new();
     input.iter().for_each(|x| pos.parse(x));
     pos.function()
 }
 
-pub fn part_two(input: &[&str]) -> i32 {
+pub fn part_two(input: &[String]) -> i32 {
     let mut pos = Position::new();
     input.iter().for_each(|x| pos.parse_two(x));
     pos.function()
@@ -80,7 +79,7 @@ mod tests {
             "down 8",
             "forward 2",
         ];
-        let output = part_one(&input);
+        let output = part_one(&str_array_to_vec(&input));
         assert_eq!(output, 150);
     }
 
@@ -94,7 +93,7 @@ mod tests {
             "down 8",
             "forward 2",
         ];
-        let output = part_two(&input);
+        let output = part_two(&str_array_to_vec(&input));
         assert_eq!(output, 900);
     }
 }
