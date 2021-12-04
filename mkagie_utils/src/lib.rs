@@ -34,3 +34,7 @@ pub fn str_array_to_vec(input: &[&str]) -> Vec<String> {
 pub fn str_array_to_int_vec(input: &[&str]) -> Vec<i32> {
     input.iter().map(|x| x.parse::<i32>().unwrap()).collect()
 }
+
+pub fn str_to_string_vec(input: &str) -> Vec<String> {
+    input.lines().into_iter().map(|x| x.to_string()).collect()
+}

@@ -4,5 +4,6 @@ members = [
     "mkagie_utils",
     "day_one",
     "day_two",
-    "day_three"
+    "day_three",
+    "day_four"
 ]
