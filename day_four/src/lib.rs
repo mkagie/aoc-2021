@@ -139,6 +139,7 @@ fn parse_input(input: &[String]) -> (Vec<u64>, Vec<Board>) {
         .map(|x| x.parse::<u64>().unwrap())
         .collect();
 
+    // TODO(mkagie) strip new_lines, then iter().windows(5).step_by(5)
     let mut boards = Vec::new();
     // skip white space
     while iter.next().is_some() {
