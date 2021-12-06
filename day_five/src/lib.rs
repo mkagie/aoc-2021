@@ -84,11 +84,11 @@ fn parse_input(input: &[String]) -> (Vec<Xyxy>, Array<i64, Ix2>) {
         .iter()
         .map(|x| {
             let xys: Vec<Xy> = x
-                .split("->")
+                .split(" -> ")
                 .map(|val| {
                     let xy: Vec<i64> = val
                         .split(',')
-                        .map(|num| num.replace(' ', "").parse::<i64>().unwrap())
+                        .map(|num| num.parse::<i64>().unwrap())
                         .collect();
 
                     let x = *xy.get(0).unwrap();
