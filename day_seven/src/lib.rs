@@ -15,11 +15,7 @@ fn parse_input(input: &[String]) -> Vec<i32> {
 }
 
 fn do_processing(input: Vec<i32>, compute_function: fn(i32) -> i32) -> i32 {
-    // Find the max value
-    let max_val = input
-        .iter()
-        .reduce(|accum, item| if accum >= item { accum } else { item })
-        .unwrap();
+    let max_val = input.iter().max().unwrap();
 
     (0..*max_val)
         .map(|center_val| {
@@ -27,7 +23,7 @@ fn do_processing(input: Vec<i32>, compute_function: fn(i32) -> i32) -> i32 {
                 accum + compute_function((x - center_val).abs())
             })
         })
-        .reduce(|min, x| if x < min { x } else { min })
+        .min()
         .unwrap()
 }
 
@@ -37,7 +33,7 @@ pub fn part_one(input: &[String]) -> i32 {
 }
 
 fn sequential_sum(input: i32) -> i32 {
-    (input as f32 / 2.0 * (1 + input) as f32) as i32
+    input * (1 + input) / 2
 }
 
 pub fn part_two(input: &[String]) -> i32 {
