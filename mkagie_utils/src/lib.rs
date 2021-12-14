@@ -23,6 +23,21 @@ where
         .collect()
 }
 
+pub fn file_chars_to_int_vec<T>(filename: &str) -> Vec<Vec<T>>
+where
+    T: FromStr,
+    <T as FromStr>::Err: Debug,
+{
+    file_to_string_vec(filename)
+        .iter()
+        .map(|x| {
+            x.chars()
+                .map(|c| c.to_string().parse::<T>().unwrap())
+                .collect()
+        })
+        .collect()
+}
+
 pub fn split_by_whitespace(input: &str) -> Vec<&str> {
     input.split(' ').collect()
 }
@@ -37,4 +52,19 @@ pub fn str_array_to_int_vec(input: &[&str]) -> Vec<i32> {
 
 pub fn str_to_string_vec(input: &str) -> Vec<String> {
     input.lines().into_iter().map(|x| x.to_string()).collect()
+}
+
+pub fn str_chars_to_int_vec<T>(input: &str) -> Vec<Vec<T>>
+where
+    T: FromStr,
+    <T as FromStr>::Err: Debug,
+{
+    str_to_string_vec(input)
+        .iter()
+        .map(|x| {
+            x.chars()
+                .map(|c| c.to_string().parse::<T>().unwrap())
+                .collect()
+        })
+        .collect()
 }
