@@ -39,20 +39,20 @@ fn find_centers_and_counts(input: &[Vec<u32>]) -> (CountMap, PointMap) {
     let mut processed = HashMap::new();
     let mut centers = HashMap::new();
 
-    for row in 0..num_rows {
-        for col in 0..num_cols {
+    input.iter().enumerate().for_each(|(row_idx, row)| {
+        row.iter().enumerate().for_each(|(col_idx, &val)| {
             unprocessed.insert(
-                (row, col),
+                (row_idx, col_idx),
                 Point {
-                    row,
-                    col,
-                    val: input[row][col],
+                    row: row_idx,
+                    col: col_idx,
+                    val,
                     gradient: None,
                     center: None,
                 },
             );
-        }
-    }
+        })
+    });
 
     while !unprocessed.is_empty() {
         // Get the first item

@@ -38,7 +38,7 @@ impl Stack {
     pub fn update(&mut self, val: char) -> Option<u32> {
         if ['(', '[', '{', '<'].contains(&val) {
             self.vec.push(val);
-            return None;
+            None
         } else {
             let ret = self.mapping.get(&val).unwrap();
             let popped_val = self.vec.pop().unwrap();
@@ -50,13 +50,12 @@ impl Stack {
         }
     }
 
-    pub fn score_line(&mut self, line: &String) -> Option<u128> {
+    pub fn score_line(&mut self, line: &str) -> Option<u128> {
         self.vec.clear();
-        let p1: Vec<u32> = line.chars().map(|x| self.update(x)).flatten().collect();
-        if p1.len() > 0 {
+        if line.chars().map(|x| self.update(x)).flatten().count() > 0 {
             return None;
         }
-        if self.vec.len() == 0 {
+        if self.vec.is_empty() {
             return None;
         }
         let mut score = 0u128;
@@ -78,7 +77,7 @@ fn part_one(input: &[String]) -> u32 {
                     return score;
                 }
             }
-            return 0;
+            0
         })
         .sum()
 }
@@ -92,7 +91,7 @@ fn part_two(input: &[String]) -> u128 {
         })
         .flatten()
         .collect();
-    scores.sort();
+    scores.sort_unstable();
     *scores.get(scores.len() / 2).unwrap()
 }
 

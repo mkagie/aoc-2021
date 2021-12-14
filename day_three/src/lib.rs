@@ -58,14 +58,13 @@ fn part_two(input: &[String]) -> isize {
             .iter()
             .enumerate()
             .map(|(idx, &x)| if x == msb[col_idx] { Some(idx) } else { None })
-            .filter(|x| x.is_some())
-            .map(|x| x.unwrap())
+            .flatten()
             .collect();
         array = array.select(Axis(0), &valid_rows_og);
         col_idx += 1;
     }
     let oxygen = isize::from_str_radix(
-        &String::from_iter(array.iter().map(|&x| if x == 1 as f64 { "1" } else { "0" })),
+        &String::from_iter(array.iter().map(|&x| if x == 1_f64 { "1" } else { "0" })),
         2,
     )
     .unwrap();
@@ -80,8 +79,7 @@ fn part_two(input: &[String]) -> isize {
             .iter()
             .enumerate()
             .map(|(idx, &x)| if x == lsb[col_idx] { Some(idx) } else { None })
-            .filter(|x| x.is_some())
-            .map(|x| x.unwrap())
+            .flatten()
             .collect();
         array_two = array_two.select(Axis(0), &valid_rows_co);
         col_idx += 1;
@@ -90,7 +88,7 @@ fn part_two(input: &[String]) -> isize {
         &String::from_iter(
             array_two
                 .iter()
-                .map(|&x| if x == 1 as f64 { "1" } else { "0" }),
+                .map(|&x| if x == 1_f64 { "1" } else { "0" }),
         ),
         2,
     )

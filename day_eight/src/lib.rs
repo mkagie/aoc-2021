@@ -46,7 +46,8 @@ impl Combo {
         let positions: Vec<[u8; 7]> = vec![2, 4, 3, 7]
             .iter()
             .map(|&x| {
-                self.digits
+                *self
+                    .digits
                     .get(
                         self.digits
                             .iter()
@@ -54,7 +55,6 @@ impl Combo {
                             .unwrap(),
                     )
                     .unwrap()
-                    .clone()
             })
             .collect();
         let position_map = vec![1, 4, 7, 8];
@@ -120,15 +120,15 @@ impl Combo {
             .collect();
 
         // Build other array
-        let remaining_digits: Vec<[u8; 7]> = self
-            .digits
-            .clone()
-            .into_iter()
-            .filter(|x| !positions.contains(x))
-            .collect();
-        let remaining_array = Array::from_iter(remaining_digits.into_iter().flatten())
-            .into_shape((6, 7))
-            .unwrap();
+        let remaining_array = Array::from_iter(
+            self.digits
+                .clone()
+                .into_iter()
+                .filter(|x| !positions.contains(x))
+                .flatten(),
+        )
+        .into_shape((6, 7))
+        .unwrap();
         let col_sums = remaining_array.sum_axis(Axis(0));
 
         // Find b/d
@@ -187,11 +187,10 @@ impl Combo {
             .iter()
             .map(|x| digit_decoder.get(x).unwrap())
             .collect();
-        let decoded_value = decoded_digits[0] * 1000
+        decoded_digits[0] * 1000
             + decoded_digits[1] * 100
             + decoded_digits[2] * 10
-            + decoded_digits[3];
-        decoded_value
+            + decoded_digits[3]
     }
 }
 

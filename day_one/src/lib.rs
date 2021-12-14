@@ -8,10 +8,7 @@ pub fn part_one(input: &[u16]) -> u16 {
 }
 
 pub fn part_two(input: &[u16]) -> u16 {
-    let window: Vec<u16> = input
-        .windows(3)
-        .map(|w| w.iter().fold(0, |a, b| a + b))
-        .collect();
+    let window: Vec<u16> = input.windows(3).map(|w| w.iter().sum()).collect();
     part_one(&window)
 }
 
