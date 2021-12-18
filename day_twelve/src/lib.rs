@@ -11,20 +11,16 @@ pub fn run() {
     println!("{:?}", part_two(&lines));
 }
 
+#[allow(clippy::derive_hash_xor_eq)]
 #[derive(Debug, Copy, Clone, PartialOrd, Eq, Ord, Hash)]
 enum CaveSize {
     Big,
-    Small(bool),
+    Small(u8),
 }
-
 impl PartialEq for CaveSize {
     fn eq(&self, other: &Self) -> bool {
         use CaveSize::*;
-        match (self, other) {
-            (&Big, &Big) => true,
-            (&Small(_), &Small(_)) => true,
-            _ => false,
-        }
+        matches!((self, other), (&Big, &Big) | (&Small(_), &Small(_)))
     }
 }
 
@@ -38,7 +34,7 @@ impl Node<'_> {
     pub fn new(id: &str) -> Node {
         let size = {
             if id.to_lowercase() == id {
-                CaveSize::Small(false)
+                CaveSize::Small(0)
             } else {
                 CaveSize::Big
             }
@@ -50,7 +46,7 @@ impl Node<'_> {
 fn parse_input(input: &[String]) -> UnGraphMap<Node, ()> {
     let mut graph = UnGraphMap::<Node, ()>::new();
     input.iter().for_each(|x| {
-        let splits: Vec<&str> = x.split("-").collect();
+        let splits: Vec<&str> = x.split('-').collect();
         let idx0 = splits[0];
         let p0 = Node::new(idx0);
         let idx1 = splits[1];
@@ -64,6 +60,7 @@ fn recursive_traversal<'a, 'b>(
     mut node: Node<'a>,
     graph: &UnGraphMap<Node<'a>, ()>,
     hash: &'b mut HashMap<&'a str, Node<'a>>,
+    small_cave_has_been_traveled_twice: &mut bool,
 ) -> usize {
     // If we are at the end, mark that this is a viable path
     if node.id == "end" {
@@ -72,31 +69,52 @@ fn recursive_traversal<'a, 'b>(
 
     // Look at each neighbor
     let neighbors = graph.neighbors(node);
+    let mut this_node_visited_twice = false;
 
-    // Check to see if we have an updated node in the hash since I can't figure
-    // out how to mutate nodes in the graph
+    // Check to see if we have an updated node in the hash
     if hash.contains_key(node.id) {
         node = hash.get_mut(&node.id).unwrap().to_owned();
     }
 
     // Indicate that we've visited here
-    if let CaveSize::Small(false) = node.size {
-        node.size = CaveSize::Small(true);
-        // Put it back in the has as having visited
-        hash.insert(node.id, node);
-    }
-    // We've already been here before -- no viable paths from here
-    else if let CaveSize::Small(true) = node.size {
-        return 0;
+    if let CaveSize::Small(n_visits) = node.size {
+        if n_visits == 0 {
+            node.size = CaveSize::Small(1);
+            // Put it back in the hash as having visited
+            hash.insert(node.id, node);
+        } else if n_visits == 1 {
+            if *small_cave_has_been_traveled_twice || node.id == "start" {
+                // Cannot visit here again
+                return 0;
+            } else {
+                node.size = CaveSize::Small(2);
+                hash.insert(node.id, node);
+                *small_cave_has_been_traveled_twice = true;
+                this_node_visited_twice = true;
+            }
+        } else {
+            return 0;
+        }
     }
 
     // Compute the number of viable paths from each neighbor
     let n_viable_paths: usize = neighbors
-        .map(|n| recursive_traversal(n, &graph, hash))
+        .filter(|x| x.id != "start")
+        .map(|n| recursive_traversal(n, graph, hash, small_cave_has_been_traveled_twice))
         .sum();
 
     // Revert that we've been here, so other searches can also see this
-    hash.remove(node.id);
+    if let CaveSize::Small(count) = node.size {
+        if count == 2 {
+            node.size = CaveSize::Small(1);
+            hash.insert(node.id, node);
+        } else {
+            hash.remove(node.id);
+        }
+    }
+    if this_node_visited_twice {
+        *small_cave_has_been_traveled_twice = false;
+    }
 
     n_viable_paths
 }
@@ -105,11 +123,16 @@ fn part_one(input: &[String]) -> usize {
     let graph = parse_input(input);
     let node = Node::new("start");
     let mut hash: HashMap<&str, Node> = HashMap::new();
-    recursive_traversal(node, &graph, &mut hash)
+    let mut b = true;
+    recursive_traversal(node, &graph, &mut hash, &mut b)
 }
 
 fn part_two(input: &[String]) -> usize {
-    0
+    let graph = parse_input(input);
+    let node = Node::new("start");
+    let mut hash: HashMap<&str, Node> = HashMap::new();
+    let mut b = false;
+    recursive_traversal(node, &graph, &mut hash, &mut b)
 }
 
 #[cfg(test)]
@@ -148,15 +171,15 @@ start-RW"
 
     #[test]
     fn test_enum_eq() {
-        assert_eq!(CaveSize::Small(false), CaveSize::Small(true));
+        assert_eq!(CaveSize::Small(0), CaveSize::Small(1));
     }
 
-    // #[test]
-    // fn test_two() {
-    //     let input = input();
-    //     let output = part_two(&str_to_string_vec(&input));
-    //     let truth = 195;
+    #[test]
+    fn test_two() {
+        let input = input();
+        let output = part_two(&str_to_string_vec(&input));
+        let truth = 3509;
 
-    //     assert_eq!(output, truth);
-    // }
+        assert_eq!(output, truth);
+    }
 }
