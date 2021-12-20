@@ -1,4 +1,4 @@
-use std::{array::IntoIter, cell::RefCell, str::Chars};
+use std::str::Chars;
 
 use mkagie_utils::*;
 
@@ -13,7 +13,7 @@ pub fn run() {
 #[derive(Debug, Clone)]
 struct Message {
     version: u128,
-    type_id: u128,
+    _type_id: u128,
     data: Data,
     length_in_bits: u128,
 }
@@ -21,7 +21,7 @@ impl Message {
     pub fn new(version: u128, type_id: u128, data: Data, length_in_bits: u128) -> Self {
         Message {
             version,
-            type_id,
+            _type_id: type_id,
             data,
             length_in_bits,
         }
@@ -48,7 +48,7 @@ impl Message {
         versions
     }
 
-    pub fn add_subpacket(&mut self, subpacket: Box<Message>) -> bool {
+    pub fn add_subpacket(&mut self, subpacket: Message) -> bool {
         if let Data::Operation(ref mut op) = self.data {
             self.length_in_bits += subpacket.length_in_bits;
             op.add_subpacket(subpacket)
@@ -78,7 +78,7 @@ struct Operation {
     length_in_bits: Option<u128>,
     number_subpackets: Option<u128>,
     operation: Op,
-    subpackets: Vec<Box<Message>>,
+    subpackets: Vec<Message>,
     subpacket_bits: u128,
 }
 
@@ -118,7 +118,7 @@ impl Operation {
         }
     }
 
-    pub fn add_subpacket(&mut self, subpacket: Box<Message>) -> bool {
+    pub fn add_subpacket(&mut self, subpacket: Message) -> bool {
         if let Some(l) = self.length_in_bits {
             let future_l = self.subpacket_bits + subpacket.length_in_bits;
             if future_l <= l {
@@ -280,7 +280,7 @@ impl<'a> Factory<'a> {
     }
 
     fn convert_field(&mut self, size: usize) -> Option<u128> {
-        if let Some(_) = self.expand_buffer(size) {
+        if self.expand_buffer(size).is_some() {
             let ret = Factory::convert_binary_to_int(&self.buffer[0..size]);
             self.buffer.drain(0..size);
             Some(ret)
@@ -323,7 +323,7 @@ impl<'a> Factory<'a> {
                     bit_counter += 1;
 
                     is_last = indicator == 0;
-                    if let Some(_) = self.expand_buffer(4) {
+                    if self.expand_buffer(4).is_some() {
                         bits.extend(&self.buffer[0..4]);
                         self.buffer.drain(0..4);
                     } else {
@@ -388,20 +388,18 @@ impl<'a> Factory<'a> {
         if input.verify() {
             println!("Yay! is valid");
             input
-        } else {
-            if let Some(n) = it.next() {
-                if n.verify() {
-                    input.add_subpacket(Box::new(n));
-                    return Factory::make_valid(input, it);
-                } else {
-                    let n = Factory::make_valid(n, it);
-                    input.add_subpacket(Box::new(n));
-                    return Factory::make_valid(input, it);
-                }
+        } else if let Some(n) = it.next() {
+            if n.verify() {
+                input.add_subpacket(n);
+                Factory::make_valid(input, it)
             } else {
-                println!("We in trouble");
-                input
+                let n = Factory::make_valid(n, it);
+                input.add_subpacket(n);
+                Factory::make_valid(input, it)
             }
+        } else {
+            println!("We in trouble");
+            input
         }
     }
 }
