@@ -27,7 +27,7 @@ impl Message {
         }
     }
 
-    pub fn verify_operation(&self) -> bool {
+    pub fn verify(&self) -> bool {
         if let Data::Operation(op) = &self.data {
             op.verify()
         } else {
@@ -50,92 +50,20 @@ impl Message {
 
     pub fn add_subpacket(&mut self, subpacket: Box<Message>) -> bool {
         if let Data::Operation(ref mut op) = self.data {
-            if let Some(l) = op.length_in_bits {
-                let future_l = op.subpacket_bits + subpacket.length_in_bits;
-                if future_l <= l {
-                    op.subpackets.push(subpacket);
-                    op.subpacket_bits = future_l;
-                }
-            } else {
-                let n_sp = op.number_subpackets.unwrap();
-                if op.subpackets.len() < n_sp as usize {
-                    op.subpackets.push(subpacket);
-                }
-            }
-            return op.verify();
+            self.length_in_bits += subpacket.length_in_bits;
+            op.add_subpacket(subpacket)
+        } else {
+            true
         }
-        false
     }
 
     pub fn do_operation(&self) -> u128 {
         if let Data::Operation(op) = &self.data {
-            let subpacket_values: Vec<u128> = op
-                .subpackets
-                .iter()
-                .map(|x| {
-                    if let Data::Value(y) = x.data {
-                        y
-                    } else {
-                        println!("Doing operation");
-                        let ret = x.do_operation();
-                        println!("Operation created {}", ret);
-                        ret
-                    }
-                })
-                .collect();
-            let output = match op.operation {
-                Op::Sum => {
-                    let ret = subpacket_values.iter().sum::<u128>().to_owned();
-                    println!("{:?}.sum() = {}", subpacket_values, ret);
-                    ret
-                }
-                Op::Product => {
-                    let ret = subpacket_values.iter().product::<u128>().to_owned();
-                    println!("{:?}.prod() = {}", subpacket_values, ret);
-                    ret
-                }
-                Op::Minimum => {
-                    let ret = *subpacket_values.iter().min().unwrap();
-                    println!("{:?}.min() = {}", subpacket_values, ret);
-                    ret
-                }
-                Op::Maximum => {
-                    let ret = *subpacket_values.iter().max().unwrap();
-                    println!("{:?}.max() = {}", subpacket_values, ret);
-                    ret
-                }
-                Op::GreaterThan => {
-                    let ret = if subpacket_values[0] > subpacket_values[1] {
-                        1
-                    } else {
-                        0
-                    };
-                    println!("{:?}.greaterThan() = {}", subpacket_values, ret);
-                    ret
-                }
-                Op::LessThan => {
-                    let ret = if subpacket_values[0] < subpacket_values[1] {
-                        1
-                    } else {
-                        0
-                    };
-                    println!("{:?}.lessThan() = {}", subpacket_values, ret);
-                    ret
-                }
-                Op::Equal => {
-                    let ret = if subpacket_values[0] == subpacket_values[1] {
-                        1
-                    } else {
-                        0
-                    };
-                    println!("{:?}.eq() = {}", subpacket_values, ret);
-                    ret
-                }
-            };
-            return output;
+            op.do_operation()
+        } else {
+            println!("This is bad");
+            0
         }
-        println!("This is bad");
-        0
     }
 }
 
@@ -188,6 +116,89 @@ impl Operation {
             7 => Some(Op::Equal),
             _ => None,
         }
+    }
+
+    pub fn add_subpacket(&mut self, subpacket: Box<Message>) -> bool {
+        if let Some(l) = self.length_in_bits {
+            let future_l = self.subpacket_bits + subpacket.length_in_bits;
+            if future_l <= l {
+                self.subpackets.push(subpacket);
+                self.subpacket_bits = future_l;
+            }
+        } else {
+            let n_sp = self.number_subpackets.unwrap();
+            if self.subpackets.len() < n_sp as usize {
+                self.subpackets.push(subpacket);
+            }
+        }
+        self.verify()
+    }
+
+    pub fn do_operation(&self) -> u128 {
+        let subpacket_values: Vec<u128> = self
+            .subpackets
+            .iter()
+            .map(|x| {
+                if let Data::Value(y) = x.data {
+                    y
+                } else {
+                    println!("Doing operation");
+                    let ret = x.do_operation();
+                    println!("Operation created {}", ret);
+                    ret
+                }
+            })
+            .collect();
+        let output = match self.operation {
+            Op::Sum => {
+                let ret = subpacket_values.iter().sum::<u128>().to_owned();
+                println!("{:?}.sum() = {}", subpacket_values, ret);
+                ret
+            }
+            Op::Product => {
+                let ret = subpacket_values.iter().product::<u128>().to_owned();
+                println!("{:?}.prod() = {}", subpacket_values, ret);
+                ret
+            }
+            Op::Minimum => {
+                let ret = *subpacket_values.iter().min().unwrap();
+                println!("{:?}.min() = {}", subpacket_values, ret);
+                ret
+            }
+            Op::Maximum => {
+                let ret = *subpacket_values.iter().max().unwrap();
+                println!("{:?}.max() = {}", subpacket_values, ret);
+                ret
+            }
+            Op::GreaterThan => {
+                let ret = if subpacket_values[0] > subpacket_values[1] {
+                    1
+                } else {
+                    0
+                };
+                println!("{:?}.greaterThan() = {}", subpacket_values, ret);
+                ret
+            }
+            Op::LessThan => {
+                let ret = if subpacket_values[0] < subpacket_values[1] {
+                    1
+                } else {
+                    0
+                };
+                println!("{:?}.lessThan() = {}", subpacket_values, ret);
+                ret
+            }
+            Op::Equal => {
+                let ret = if subpacket_values[0] == subpacket_values[1] {
+                    1
+                } else {
+                    0
+                };
+                println!("{:?}.eq() = {}", subpacket_values, ret);
+                ret
+            }
+        };
+        output
     }
 }
 
@@ -280,12 +291,12 @@ impl<'a> Factory<'a> {
 
     pub fn parse_input(&mut self) -> Vec<Message> {
         let mut output = Vec::new();
-        let mut op_container: Option<Message> = None;
         loop {
             let mut bit_counter = 0;
             let version = if let Some(v) = self.convert_field(3) {
                 v
             } else {
+                println!("No version");
                 break;
             };
             bit_counter += 3;
@@ -293,6 +304,7 @@ impl<'a> Factory<'a> {
             let type_id = if let Some(t) = self.convert_field(3) {
                 t
             } else {
+                println!("No type_id");
                 break;
             };
             bit_counter += 3;
@@ -305,6 +317,7 @@ impl<'a> Factory<'a> {
                     let indicator = if let Some(t) = self.convert_field(1) {
                         t
                     } else {
+                        println!("No indicator");
                         break;
                     };
                     bit_counter += 1;
@@ -314,23 +327,20 @@ impl<'a> Factory<'a> {
                         bits.extend(&self.buffer[0..4]);
                         self.buffer.drain(0..4);
                     } else {
+                        println!("No value data");
                         break;
                     }
                     bit_counter += 4;
                 }
                 let value = Factory::convert_binary_to_int(&bits);
                 let message = Message::new(version, type_id, Data::Value(value), bit_counter);
-                if let Some(ref mut msg) = op_container {
-                    if msg.add_subpacket(Box::new(message)) {
-                        output.push(msg.to_owned());
-                        op_container = None;
-                    }
-                }
+                output.push(message);
             } else {
                 // Operator
                 let length_type_id = if let Some(l) = self.convert_field(1) {
                     l
                 } else {
+                    println!("No length_type_id");
                     break;
                 };
                 bit_counter += 1;
@@ -339,6 +349,7 @@ impl<'a> Factory<'a> {
                     let total_length_bits = if let Some(t) = self.convert_field(15) {
                         t
                     } else {
+                        println!("No ltotal_length");
                         break;
                     };
                     bit_counter += 15;
@@ -347,21 +358,14 @@ impl<'a> Factory<'a> {
                     let total_number_subpackets = if let Some(t) = self.convert_field(11) {
                         t
                     } else {
+                        println!("No ltotal_subpackets_num");
                         break;
                     };
                     bit_counter += 11;
                     Operation::new(None, Some(total_number_subpackets), type_id)
                 };
-                if op_container.is_some() {
-                    // This needs to go into the container
-                    output.push(op_container.unwrap());
-                }
-                op_container = Some(Message::new(
-                    version,
-                    type_id,
-                    Data::Operation(op),
-                    bit_counter,
-                ));
+                let message = Message::new(version, type_id, Data::Operation(op), bit_counter);
+                output.push(message);
             }
         }
         // output
@@ -381,11 +385,12 @@ impl<'a> Factory<'a> {
     where
         I: Iterator<Item = Message>,
     {
-        if input.verify_operation() {
+        if input.verify() {
+            println!("Yay! is valid");
             input
         } else {
             if let Some(n) = it.next() {
-                if n.verify_operation() {
+                if n.verify() {
                     input.add_subpacket(Box::new(n));
                     return Factory::make_valid(input, it);
                 } else {
@@ -394,6 +399,7 @@ impl<'a> Factory<'a> {
                     return Factory::make_valid(input, it);
                 }
             } else {
+                println!("We in trouble");
                 input
             }
         }
