@@ -3,8 +3,9 @@ use std::str::Chars;
 use mkagie_utils::*;
 
 pub fn run() {
-    let filename =
-        "/home/mkagie/code/personal/adventOfCoding/advent-2021/day_sixteen/day_sixteen.txt";
+    // let filename =
+    //     "/home/mkagie/code/personal/adventOfCoding/advent-2021/day_sixteen/day_sixteen.txt";
+    let filename = "/home/mkagie/Downloads/D16P1bits.txt";
     let lines = file_to_string_vec(filename);
     println!("{:?}", part_one(&lines));
     println!("{:?}", part_two(&lines));
@@ -61,7 +62,6 @@ impl Message {
         if let Data::Operation(op) = &self.data {
             op.do_operation()
         } else {
-            println!("This is bad");
             0
         }
     }
@@ -142,9 +142,7 @@ impl Operation {
                 if let Data::Value(y) = x.data {
                     y
                 } else {
-                    println!("Doing operation");
                     let ret = x.do_operation();
-                    println!("Operation created {}", ret);
                     ret
                 }
             })
@@ -296,7 +294,6 @@ impl<'a> Factory<'a> {
             let version = if let Some(v) = self.convert_field(3) {
                 v
             } else {
-                println!("No version");
                 break;
             };
             bit_counter += 3;
@@ -304,7 +301,6 @@ impl<'a> Factory<'a> {
             let type_id = if let Some(t) = self.convert_field(3) {
                 t
             } else {
-                println!("No type_id");
                 break;
             };
             bit_counter += 3;
@@ -317,7 +313,6 @@ impl<'a> Factory<'a> {
                     let indicator = if let Some(t) = self.convert_field(1) {
                         t
                     } else {
-                        println!("No indicator");
                         break;
                     };
                     bit_counter += 1;
@@ -327,7 +322,6 @@ impl<'a> Factory<'a> {
                         bits.extend(&self.buffer[0..4]);
                         self.buffer.drain(0..4);
                     } else {
-                        println!("No value data");
                         break;
                     }
                     bit_counter += 4;
@@ -340,7 +334,6 @@ impl<'a> Factory<'a> {
                 let length_type_id = if let Some(l) = self.convert_field(1) {
                     l
                 } else {
-                    println!("No length_type_id");
                     break;
                 };
                 bit_counter += 1;
@@ -349,7 +342,6 @@ impl<'a> Factory<'a> {
                     let total_length_bits = if let Some(t) = self.convert_field(15) {
                         t
                     } else {
-                        println!("No ltotal_length");
                         break;
                     };
                     bit_counter += 15;
@@ -358,7 +350,6 @@ impl<'a> Factory<'a> {
                     let total_number_subpackets = if let Some(t) = self.convert_field(11) {
                         t
                     } else {
-                        println!("No ltotal_subpackets_num");
                         break;
                     };
                     bit_counter += 11;
@@ -386,7 +377,6 @@ impl<'a> Factory<'a> {
         I: Iterator<Item = Message>,
     {
         if input.verify() {
-            println!("Yay! is valid");
             input
         } else if let Some(n) = it.next() {
             if n.verify() {
@@ -398,7 +388,6 @@ impl<'a> Factory<'a> {
                 Factory::make_valid(input, it)
             }
         } else {
-            println!("We in trouble");
             input
         }
     }
