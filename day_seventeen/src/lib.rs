@@ -6,8 +6,8 @@ pub fn run() {
     let filename =
         "/home/mkagie/code/personal/adventOfCoding/advent-2021/day_seventeen/day_seventeen.txt";
     let lines = file_to_string_vec(filename);
-    println!("{:?}", part_one(&lines));
-    println!("{:?}", part_two(&lines));
+    println!("{:?}", part_one(&lines, (1, 1000), (1, 1000)));
+    println!("{:?}", part_two(&lines, (1, 1000), (-500, 1000)));
 }
 
 struct Probe {
@@ -109,10 +109,14 @@ impl TargetArea {
     }
 }
 
-fn part_one(input: &[String]) -> i32 {
+fn part_one(input: &[String], x_vals: (i32, i32), y_vals: (i32, i32)) -> i32 {
     let target_area = TargetArea::new(input[0].as_str());
-    let velocities: Vec<(i32, i32)> = (1..1000)
-        .map(|x| (1..1000).map(|y| (x, y)).collect::<Vec<(i32, i32)>>())
+    let velocities: Vec<(i32, i32)> = (x_vals.0..x_vals.1)
+        .map(|x| {
+            (y_vals.0..y_vals.1)
+                .map(|y| (x, y))
+                .collect::<Vec<(i32, i32)>>()
+        })
         .flatten()
         .collect::<Vec<(i32, i32)>>();
     velocities
@@ -126,10 +130,14 @@ fn part_one(input: &[String]) -> i32 {
         .unwrap()
 }
 
-fn part_two(input: &[String]) -> usize {
+fn part_two(input: &[String], x_vals: (i32, i32), y_vals: (i32, i32)) -> usize {
     let target_area = TargetArea::new(input[0].as_str());
-    let velocities: Vec<(i32, i32)> = (1..1000)
-        .map(|x| (-500..1000).map(|y| (x, y)).collect::<Vec<(i32, i32)>>())
+    let velocities: Vec<(i32, i32)> = (x_vals.0..x_vals.1)
+        .map(|x| {
+            (y_vals.0..y_vals.1)
+                .map(|y| (x, y))
+                .collect::<Vec<(i32, i32)>>()
+        })
         .flatten()
         .collect::<Vec<(i32, i32)>>();
     let values: Vec<&(i32, i32)> = velocities
@@ -145,7 +153,6 @@ fn part_two(input: &[String]) -> usize {
         .flatten()
         .collect();
 
-    println!("{:?}", values);
     values.len()
 }
 
@@ -160,7 +167,7 @@ mod tests {
     #[test]
     fn test_one() {
         let input = input();
-        let output = part_one(&str_to_string_vec(&input));
+        let output = part_one(&str_to_string_vec(&input), (1, 100), (1, 100));
         let truth = 45;
 
         assert_eq!(output, truth);
@@ -169,7 +176,7 @@ mod tests {
     #[test]
     fn test_two() {
         let input = input();
-        let output = part_two(&str_to_string_vec(&input));
+        let output = part_two(&str_to_string_vec(&input), (1, 100), (-50, 50));
         let truth = 112;
 
         assert_eq!(output, truth);

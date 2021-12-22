@@ -142,8 +142,7 @@ impl Operation {
                 if let Data::Value(y) = x.data {
                     y
                 } else {
-                    let ret = x.do_operation();
-                    ret
+                    x.do_operation()
                 }
             })
             .collect();
