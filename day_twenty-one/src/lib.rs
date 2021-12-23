@@ -165,7 +165,7 @@ fn part_two(input: &[String]) -> u64 {
         for ((player0, player1), n_games) in hash.into_iter() {
             // Roll for player0
             for (position_adjustment0, n_games_position_adjusted0) in likelihoods.iter() {
-                let mut p0 = player0.clone();
+                let mut p0 = player0;
                 p0.move_spaces(*position_adjustment0 as u32);
                 let n_games_to_this_point = n_games * n_games_position_adjusted0;
                 if p0.score >= points_to_win {
@@ -173,18 +173,16 @@ fn part_two(input: &[String]) -> u64 {
                 } else {
                     // Roll for player1
                     for (position_adjustemnt1, n_games_position_adjusted1) in likelihoods.iter() {
-                        let mut p1 = player1.clone();
+                        let mut p1 = player1;
                         p1.move_spaces(*position_adjustemnt1 as u32);
                         let n_games_to_this_point =
                             n_games_to_this_point * n_games_position_adjusted1;
                         if p1.score >= points_to_win {
                             n_wins_1 += n_games_to_this_point;
+                        } else if let Some(v) = new_hash.get_mut(&(p0, p1)) {
+                            *v += n_games_to_this_point;
                         } else {
-                            if let Some(v) = new_hash.get_mut(&(p0, p1)) {
-                                *v += n_games_to_this_point;
-                            } else {
-                                new_hash.insert((p0, p1), n_games_to_this_point);
-                            }
+                            new_hash.insert((p0, p1), n_games_to_this_point);
                         }
                     }
                 }
