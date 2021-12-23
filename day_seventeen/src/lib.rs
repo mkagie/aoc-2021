@@ -140,7 +140,7 @@ fn part_two(input: &[String], x_vals: (i32, i32), y_vals: (i32, i32)) -> usize {
         })
         .flatten()
         .collect::<Vec<(i32, i32)>>();
-    let values: Vec<&(i32, i32)> = velocities
+    velocities
         .iter()
         .map(|velocity| {
             let mut probe = Probe::new();
@@ -151,9 +151,7 @@ fn part_two(input: &[String], x_vals: (i32, i32), y_vals: (i32, i32)) -> usize {
             }
         })
         .flatten()
-        .collect();
-
-    values.len()
+        .count()
 }
 
 #[cfg(test)]
