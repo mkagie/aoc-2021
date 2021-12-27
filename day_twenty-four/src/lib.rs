@@ -14,7 +14,7 @@ pub fn run() {
 }
 
 fn parse_input(input: &[String]) -> Vec<Instruction> {
-    input.iter().map(|x| Instruction::new(x.as_ref())).collect()
+    input.into_iter().map(|x| Instruction::new(x)).collect()
 }
 
 /// Function to take in a 14 bit number and produce a vector on integers
@@ -33,27 +33,27 @@ fn convert_int_to_vec(mut input: i64) -> Vec<i64> {
 }
 
 #[derive(Debug, Clone)]
-enum Var1<'a> {
-    Var(&'a str),
+enum Var1 {
+    Var(String),
     Int(i64),
 }
 
 #[derive(Clone)]
-struct Instruction<'a> {
-    cmd: &'a str,
-    var0: &'a str,
-    var1: Option<Var1<'a>>,
+struct Instruction {
+    cmd: String,
+    var0: String,
+    var1: Option<Var1>,
 }
-impl<'a> Instruction<'a> {
-    pub fn new(input: &'a str) -> Self {
+impl Instruction {
+    pub fn new(input: &String) -> Self {
         let mut splits = input.split_ascii_whitespace();
-        let cmd = splits.next().unwrap();
-        let var0 = splits.next().unwrap();
+        let cmd = splits.next().unwrap().to_owned();
+        let var0 = splits.next().unwrap().to_owned();
         let var1 = if let Some(v) = splits.next() {
             if let Ok(int) = v.parse::<i64>() {
                 Some(Var1::Int(int))
             } else {
-                Some(Var1::Var(v))
+                Some(Var1::Var(v.to_owned()))
             }
         } else {
             None
@@ -62,7 +62,7 @@ impl<'a> Instruction<'a> {
         Self { cmd, var0, var1 }
     }
 
-    pub fn do_operation<T>(&self, variables: &mut HashMap<&'a str, i64>, inputs: &mut T)
+    pub fn do_operation<T>(&self, variables: &mut HashMap<String, i64>, inputs: &mut T)
     where
         T: Iterator<Item = i64>,
     {
@@ -90,36 +90,36 @@ impl<'a> Instruction<'a> {
         // }
     }
 
-    fn inp_a<T>(&self, variables: &mut HashMap<&'a str, i64>, inputs: &mut T)
+    fn inp_a<T>(&self, variables: &mut HashMap<String, i64>, inputs: &mut T)
     where
         T: Iterator<Item = i64>,
     {
         let val = inputs.next().unwrap();
-        variables.insert(self.var0, val);
+        variables.insert(self.var0.clone(), val);
     }
 
-    fn do_var_op(&self, op: fn(i64, i64) -> i64, variables: &mut HashMap<&'a str, i64>) {
+    fn do_var_op(&self, op: fn(i64, i64) -> i64, variables: &mut HashMap<String, i64>) {
         let var1 = self.var1.as_ref().unwrap();
         let b = match var1 {
             Var1::Int(b) => b.to_owned(),
             Var1::Var(s) => variables.get(s).unwrap_or(&0).to_owned(),
         };
-        if let Some(a) = variables.get_mut(self.var0) {
+        if let Some(a) = variables.get_mut(&self.var0) {
             *a = op(*a, b);
         } else {
             let a = op(0, b);
-            variables.insert(self.var0, a);
+            variables.insert(self.var0.clone(), a);
         }
     }
 }
 
 #[derive(Clone)]
-struct Program<'a> {
-    instructions: Vec<Instruction<'a>>,
-    variables: HashMap<&'a str, i64>,
+struct Program {
+    instructions: Vec<Instruction>,
+    variables: HashMap<String, i64>,
 }
-impl<'a> Program<'a> {
-    pub fn new(instructions: Vec<Instruction<'a>>) -> Self {
+impl Program {
+    pub fn new(instructions: Vec<Instruction>) -> Self {
         Program {
             instructions,
             variables: HashMap::new(),
@@ -141,7 +141,7 @@ impl<'a> Program<'a> {
     }
 }
 
-fn part_one(input: &'static [String]) -> i64 {
+fn part_one(input: &[String]) -> i64 {
     let instructions = parse_input(input);
     let mut input: i64 = 99999999999999;
     let program = Program::new(instructions);
@@ -159,7 +159,7 @@ fn part_one(input: &'static [String]) -> i64 {
             if (c + 1) % 10000 == 0 {
                 println!("{} -- {}", input_, return_code);
             }
-            tx.send((return_code, input_));
+            tx.send((return_code, input_)).unwrap();
         });
         input -= 1;
         counter += 1;
