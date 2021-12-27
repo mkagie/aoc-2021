@@ -20,8 +20,11 @@ members = [
     "day_sixteen",
     "day_seventeen",
     "day_eighteen",
-    # "day_nineteen",
+    "day_nineteen",
     "day_twenty",
     "day_twenty-one",
-    "day_twenty-two"
+    "day_twenty-two",
+    "day_twenty-three",
+    "day_twenty-four",
+    "day_twenty-five",
 ]

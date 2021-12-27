@@ -6,8 +6,7 @@ use ndarray::{prelude::*, SliceInfo, SliceInfoElem};
 use threadpool::ThreadPool;
 
 pub fn run() {
-    let filename =
-        "/home/mkagie/code/personal/adventOfCoding/advent-2021/day_twenty-two/day_twenty-two.txt";
+    let filename = "day_twenty-two.txt";
     let input = file_to_string_vec(filename);
 
     println!("{}", part_one(&input));
@@ -179,7 +178,7 @@ fn part_two_memoization(input: &[String]) -> usize {
     let hash = Arc::new(DashSet::new());
 
     // Build a threadpool
-    let pool = ThreadPool::new(16);
+    let pool = ThreadPool::new(20);
 
     instructions
         .into_iter()
